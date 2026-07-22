@@ -105,6 +105,7 @@ export default function Reports() {
   const [errorMessage, setErrorMessage] = useState('');
   const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
   const [summary, setSummary] = useState<Array<{ label: string; value: string }>>([]);
+  const [reportFilter, setReportFilter] = useState('');
 
   const selectedReport = reportOptions.find((item) => item.key === activeReport) ?? reportOptions[0];
 
@@ -182,16 +183,25 @@ export default function Reports() {
     void loadReport(activeReport);
   }, [activeReport]);
 
-  const columns = useMemo(() => pickColumns(rows), [rows]);
+  const filteredRows = useMemo(() => {
+    const search = reportFilter.trim().toLowerCase();
+    if (!search) return rows;
+
+    return rows.filter((row) =>
+      Object.values(row).some((value) => String(value ?? '').toLowerCase().includes(search)),
+    );
+  }, [rows, reportFilter]);
+
+  const columns = useMemo(() => pickColumns(filteredRows), [filteredRows]);
   const exportRows = useMemo(
     () =>
-      rows.map((row) =>
+      filteredRows.map((row) =>
         columns.reduce<Record<string, string>>((acc, column) => {
           acc[prettifyLabel(column)] = formatCellValue(column, row[column]);
           return acc;
         }, {}),
       ),
-    [columns, rows],
+    [columns, filteredRows],
   );
 
   const handleExportExcel = () => {
@@ -229,7 +239,7 @@ export default function Reports() {
     autoTable(doc, {
       startY: 78,
       head: [columns.map((column) => prettifyLabel(column))],
-      body: rows.map((row) => columns.map((column) => formatCellValue(column, row[column]))),
+      body: filteredRows.map((row) => columns.map((column) => formatCellValue(column, row[column]))),
       styles: {
         fontSize: 8,
         cellPadding: 6,
@@ -324,12 +334,20 @@ export default function Reports() {
           <div className="border-b border-slate-100 px-5 py-4">
             <h3 className="text-sm font-black text-slate-900">{selectedReport.label} Records</h3>
           </div>
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-3">
+            <input
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+              placeholder="Filter current report records"
+              value={reportFilter}
+              onChange={(event) => setReportFilter(event.target.value)}
+            />
+          </div>
 
           {loading ? (
             <div className="px-5 py-10 text-sm text-slate-500">Loading report data...</div>
           ) : errorMessage ? (
             <div className="px-5 py-10 text-sm font-semibold text-rose-700">{errorMessage}</div>
-          ) : !rows.length ? (
+          ) : !filteredRows.length ? (
             <div className="px-5 py-10 text-sm text-slate-500">No records found for this report.</div>
           ) : (
             <div className="overflow-x-auto">
@@ -342,7 +360,7 @@ export default function Reports() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {rows.slice(0, 100).map((row, index) => (
+                  {filteredRows.slice(0, 100).map((row, index) => (
                     <tr key={`${activeReport}-${index}`} className="hover:bg-slate-50">
                       {columns.map((column) => {
                         const value = row[column];

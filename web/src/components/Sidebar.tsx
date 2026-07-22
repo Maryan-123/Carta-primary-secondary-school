@@ -67,7 +67,7 @@ const defaultOpenGroups: Record<NavGroup, boolean> = {
 };
 
 export default function Sidebar() {
-  const { currentUser, activeTab, setActiveTab, setCurrentUser, openProfileView } = useUIStore();
+  const { currentUser, activeTab, setActiveTab, setCurrentUser, openProfileView, isProfileOpen } = useUIStore();
   const [openGroups, setOpenGroups] = useState<Record<NavGroup, boolean>>(defaultOpenGroups);
 
   const handleLogout = async () => {
@@ -143,11 +143,18 @@ export default function Sidebar() {
                 <div className="mt-2 space-y-1">
                   {items.map((item) => {
                     const IconComponent = item.icon;
-                    const isActive = activeTab === item.id;
+                    const isProfileItem = item.id === 'profile';
+                    const isActive = isProfileItem ? isProfileOpen : activeTab === item.id;
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => {
+                          if (isProfileItem) {
+                            openProfileView();
+                            return;
+                          }
+                          setActiveTab(item.id);
+                        }}
                         className={`w-full flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition ${
                           isActive
                             ? 'bg-[linear-gradient(135deg,#1A46FD_0%,#019444_100%)] text-white shadow-lg shadow-blue-200/60'

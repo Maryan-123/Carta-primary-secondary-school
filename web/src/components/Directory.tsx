@@ -212,6 +212,8 @@ const formatApiError = (error: any, fallback: string) => {
 
 export default function Directory() {
   const openConfirm = useUIStore((state) => state.openConfirm);
+  const portalActiveTab = useUIStore((state) => state.activeTab);
+  const setPortalActiveTab = useUIStore((state) => state.setActiveTab);
   const [activeTab, setActiveTab] = useState<DirectoryTab>('students');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -249,6 +251,17 @@ export default function Directory() {
       return {};
     }
   });
+
+  useEffect(() => {
+    if (portalActiveTab === 'students' || portalActiveTab === 'parents' || portalActiveTab === 'staff') {
+      setActiveTab(portalActiveTab);
+      return;
+    }
+
+    if (portalActiveTab === 'accounts') {
+      setActiveTab('accounts');
+    }
+  }, [portalActiveTab]);
 
   const persistTeacherNameOverride = (staffId: number, firstName: string, lastName: string) => {
     const next = {
@@ -1009,6 +1022,9 @@ export default function Directory() {
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab);
+                  if (tab !== 'accounts') {
+                    setPortalActiveTab(tab);
+                  }
                   setSearchQuery('');
                 }}
                 className={`px-3 py-1.5 text-xs font-bold rounded-md capitalize transition ${

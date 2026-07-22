@@ -7,6 +7,7 @@ import {
   BookText,
   CalendarDays,
   CreditCard,
+  Eye,
   GraduationCap,
   Library,
   Megaphone,
@@ -28,6 +29,7 @@ import {
   XAxis as ReXAxis,
   YAxis as ReYAxis,
 } from 'recharts';
+import InvoicePreviewModal from './InvoicePreviewModal';
 
 type DashboardRole = 'ADMIN' | 'PRINCIPAL' | 'TEACHER' | 'ACCOUNTANT' | 'LIBRARIAN' | 'PARENT' | 'STUDENT';
 
@@ -219,6 +221,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [selectedInvoicePreview, setSelectedInvoicePreview] = useState<{ invoice: any; ownerName: string } | null>(null);
 
   const role = (currentUser?.role || 'STUDENT') as DashboardRole;
 
@@ -561,7 +564,9 @@ export default function Dashboard() {
           <SurfaceCard title="My Classes" icon={<School className="h-4 w-4" />}>
             <div className="flex flex-wrap gap-2">
               {(dashboardData?.assignedClasses || []).map((item: any) => (
-                <InfoBadge key={item.id}>{item.name}{item.section_name ? ` - ${item.section_name}` : ''}</InfoBadge>
+                <div key={item.id}>
+                  <InfoBadge>{item.name}{item.section_name ? ` - ${item.section_name}` : ''}</InfoBadge>
+                </div>
               ))}
               {!(dashboardData?.assignedClasses || []).length ? <EmptyState message="No classes assigned yet." /> : null}
             </div>
@@ -570,7 +575,9 @@ export default function Dashboard() {
           <SurfaceCard title="My Subjects" icon={<BookOpenCheck className="h-4 w-4" />}>
             <div className="flex flex-wrap gap-2">
               {(dashboardData?.assignedSubjects || []).map((item: any) => (
-                <InfoBadge key={item.id}>{item.code} - {item.name}</InfoBadge>
+                <div key={item.id}>
+                  <InfoBadge>{item.code} - {item.name}</InfoBadge>
+                </div>
               ))}
               {!(dashboardData?.assignedSubjects || []).length ? <EmptyState message="No subjects assigned yet." /> : null}
             </div>
@@ -746,6 +753,7 @@ export default function Dashboard() {
                 <div className="rounded-2xl border border-[#c7d7ff] bg-[linear-gradient(135deg,#edf4ff_0%,#ecf8f1_100%)] px-4 py-3">
                   <p className="text-sm font-bold text-slate-900">{item.subject_name || 'Subject'}</p>
                   <p className="mt-1 text-sm text-slate-500">Day {item.day_of_week} | {item.start_time} - {item.end_time}</p>
+                  <p className="mt-1 text-xs font-semibold text-[#123B8A]">Teacher: {item.teacher_name || 'Not assigned yet'}</p>
                 </div>
               )}
             />
@@ -956,6 +964,75 @@ export default function Dashboard() {
                     <InfoBadge>{(item.reportCards || []).length} Report Cards</InfoBadge>
                     <InfoBadge>Balance: {item.feeBalance?.total_balance ?? item.feeBalance?.balance_amount ?? 0}</InfoBadge>
                   </div>
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Invoice Details</p>
+                    <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(135deg,#fff9eb_0%,#fff4d8_100%)] px-4 py-3 text-sm text-amber-900">
+                      Parents can review invoices here, but payments are still recorded by the school finance office. Use the invoice number below when paying at school.
+                    </div>
+                    {Array.isArray(item.invoices) && item.invoices.length ? (
+                      item.invoices.slice(0, 4).map((invoice: any) => (
+                        <div key={invoice.id} className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold text-slate-900">{invoice.invoice_number || `Invoice #${invoice.id}`}</p>
+                              <p className="mt-1 text-xs text-slate-500">
+                                Due: {String(invoice.due_date || invoice.invoice_date || '').slice(0, 10) || '-'} | Status: {invoice.status || 'UNPAID'}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-black text-[#123B8A]">{invoice.final_amount ?? invoice.total_amount ?? 0}</p>
+                              <p className="mt-1 text-xs text-slate-500">Balance: {invoice.balance_amount ?? 0}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 space-y-2">
+                            {Array.isArray(invoice.items) && invoice.items.length ? (
+                              invoice.items.map((feeItem: any) => (
+                                <div key={feeItem.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2">
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-900">{feeItem.fee_type_name || feeItem.description || 'Fee item'}</p>
+                                      {feeItem.description ? <p className="mt-1 text-[11px] text-slate-500">{feeItem.description}</p> : null}
+                                    </div>
+                                    <div className="text-right text-xs text-slate-600">
+                                      <p>Amount: {feeItem.amount ?? 0}</p>
+                                      <p>Discount: {feeItem.discount_amount ?? 0}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-slate-500">No fee item details were added to this invoice.</p>
+                            )}
+                          </div>
+                          {String(invoice.status || '').toUpperCase() !== 'PAID' && Number(invoice.balance_amount ?? invoice.final_amount ?? invoice.total_amount ?? 0) > 0 ? (
+                            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
+                              Remaining balance for <span className="font-black">{invoice.invoice_number || `Invoice #${invoice.id}`}</span> is{' '}
+                              <span className="font-black">{invoice.balance_amount ?? invoice.final_amount ?? invoice.total_amount ?? 0}</span>.
+                            </div>
+                          ) : null}
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSelectedInvoicePreview({
+                                  invoice,
+                                  ownerName: `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.admission_number || 'Student',
+                                })
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-[#b8cbff] bg-white/85 px-3.5 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#123B8A] transition hover:border-[#123B8A]"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View Full Invoice
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="rounded-2xl border border-dashed border-[#c7d7ff] bg-white/70 px-4 py-4 text-sm text-slate-500">
+                        No invoices recorded yet for this child.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             />
@@ -987,6 +1064,12 @@ export default function Dashboard() {
             )}
           />
         </SurfaceCard>
+
+        <InvoicePreviewModal
+          invoice={selectedInvoicePreview?.invoice || null}
+          ownerName={selectedInvoicePreview?.ownerName}
+          onClose={() => setSelectedInvoicePreview(null)}
+        />
       </div>
     );
   }

@@ -9,6 +9,82 @@ const safeQuery = async (sql: string, params: unknown[] = []) => {
   }
 };
 
+const attachInvoiceItems = async <T extends Record<string, unknown> & { id: number | string }>(invoices: T[]) => {
+  if (!invoices.length) {
+    return invoices.map((invoice) => ({ ...invoice, items: [] as Array<Record<string, unknown>> }));
+  }
+
+  const invoiceIds = invoices
+    .map((invoice) => Number(invoice.id))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  if (!invoiceIds.length) {
+    return invoices.map((invoice) => ({ ...invoice, items: [] as Array<Record<string, unknown>> }));
+  }
+
+  const placeholders = invoiceIds.map((_, index) => `$${index + 1}`).join(", ");
+  const items = await safeQuery(
+    `SELECT sii.*, ft.name AS fee_type_name
+     FROM student_invoice_items sii
+     LEFT JOIN fee_types ft ON ft.id = sii.fee_type_id
+     WHERE sii.invoice_id IN (${placeholders})
+     ORDER BY sii.invoice_id, sii.id`,
+    invoiceIds
+  );
+
+  const groupedItems = items.reduce<Record<string, typeof items>>((accumulator, item) => {
+    const key = String(item.invoice_id);
+    if (!accumulator[key]) {
+      accumulator[key] = [];
+    }
+    accumulator[key].push(item);
+    return accumulator;
+  }, {});
+
+  return invoices.map((invoice) => ({
+    ...invoice,
+    items: groupedItems[String(invoice.id)] || []
+  }));
+};
+
+const buildFeeBalanceFromInvoices = (
+  invoices: Array<Record<string, unknown>>,
+  feeBalanceRow?: Record<string, unknown> | null
+) => {
+  const totalBalanceFromInvoices = invoices.reduce((sum, invoice) => {
+    const status = String(invoice.status || "").toUpperCase();
+    if (status === "CANCELLED" || status === "PAID") {
+      return sum;
+    }
+    return sum + Number(invoice.balance_amount ?? invoice.final_amount ?? invoice.total_amount ?? 0);
+  }, 0);
+
+  const totalInvoiced = invoices.reduce(
+    (sum, invoice) => sum + Number(invoice.final_amount ?? invoice.total_amount ?? 0),
+    0
+  );
+
+  const totalPaid = invoices.reduce((sum, invoice) => sum + Number(invoice.paid_amount ?? 0), 0);
+
+  if (feeBalanceRow) {
+    return {
+      ...feeBalanceRow,
+      total_balance:
+        totalBalanceFromInvoices > 0 ? totalBalanceFromInvoices : Number(feeBalanceRow.total_balance ?? feeBalanceRow.balance_amount ?? 0),
+      total_invoiced:
+        totalInvoiced > 0 ? totalInvoiced : Number(feeBalanceRow.total_invoiced ?? feeBalanceRow.final_amount ?? 0),
+      total_paid:
+        totalPaid > 0 ? totalPaid : Number(feeBalanceRow.total_paid ?? feeBalanceRow.paid_amount ?? 0),
+    };
+  }
+
+  return {
+    total_balance: totalBalanceFromInvoices,
+    total_invoiced: totalInvoiced,
+    total_paid: totalPaid,
+  };
+};
+
 export const insightsService = {
   adminDashboard: () => insightsRepository.adminDashboard(),
   async teacherDashboard(userId: number) {
@@ -198,7 +274,7 @@ export const insightsService = {
         upcomingEvents: []
       };
     }
-    const [classroom, assignments, attendance, results, reportCards, feeBalance, invoices, payments, libraryLoans, announcements, events, timetable] = await Promise.all([
+    const [classroom, assignments, attendance, attendanceRecords, results, reportCards, feeBalance, invoices, payments, libraryLoans, announcements, events, timetable] = await Promise.all([
       query(
         `SELECT * FROM student_current_enrollment_view WHERE student_id = $1 LIMIT 1`,
         [studentId]
@@ -220,9 +296,21 @@ export const insightsService = {
       query(
         `SELECT
            COUNT(*) FILTER (WHERE status = 'PRESENT')::int AS present_count,
+           COUNT(*) FILTER (WHERE status = 'ABSENT')::int AS absent_count,
+           COUNT(*) FILTER (WHERE status = 'LATE')::int AS late_count,
+           COUNT(*) FILTER (WHERE status = 'EXCUSED')::int AS excused_count,
+           COUNT(*) FILTER (WHERE status = 'SICK')::int AS sick_count,
            COUNT(*)::int AS total_count
          FROM attendance_records
          WHERE student_id = $1`,
+        [studentId]
+      ),
+      query(
+        `SELECT ats.attendance_date, ar.status
+         FROM attendance_records ar
+         JOIN attendance_sessions ats ON ats.id = ar.attendance_session_id
+         WHERE ar.student_id = $1
+         ORDER BY ats.attendance_date DESC, ar.id DESC`,
         [studentId]
       ),
       query(`SELECT * FROM exam_results WHERE student_id = $1 ORDER BY created_at DESC LIMIT 10`, [studentId]),
@@ -234,11 +322,21 @@ export const insightsService = {
       query(`SELECT * FROM announcements WHERE is_active = TRUE ORDER BY published_at DESC LIMIT 10`),
       query(`SELECT * FROM school_events WHERE start_date >= CURRENT_DATE ORDER BY start_date ASC LIMIT 10`),
       query(
-        `SELECT te.*, tp.name AS period_name, tp.start_time, tp.end_time, c.name AS classroom_name, s.name AS subject_name
+        `SELECT
+           te.*,
+           tp.name AS period_name,
+           tp.start_time,
+           tp.end_time,
+           c.name AS classroom_name,
+           s.name AS subject_name,
+           CONCAT_WS(' ', u.first_name, u.last_name) AS teacher_name
          FROM timetable_entries te
          JOIN timetable_periods tp ON tp.id = te.period_id
          LEFT JOIN classrooms c ON c.id = te.classroom_id
          LEFT JOIN subjects s ON s.id = te.subject_id
+         LEFT JOIN teachers tch ON tch.id = te.teacher_id
+         LEFT JOIN staff stf ON stf.id = tch.staff_id
+         LEFT JOIN users u ON u.id = stf.user_id
          WHERE te.classroom_id = (
            SELECT classroom_id
            FROM student_enrollments
@@ -253,15 +351,22 @@ export const insightsService = {
 
     const presentCount = Number(attendance[0]?.present_count ?? 0);
     const totalCount = Number(attendance[0]?.total_count ?? 0);
+    const invoicesWithItems = await attachInvoiceItems(invoices as Array<Record<string, unknown> & { id: number | string }>);
+    const normalizedFeeBalance = buildFeeBalanceFromInvoices(
+      invoicesWithItems as Array<Record<string, unknown>>,
+      (feeBalance[0] as Record<string, unknown> | undefined) ?? null
+    );
 
     return {
       currentClassroom: classroom[0] ?? null,
       recentAssignments: assignments,
       attendancePercentage: totalCount === 0 ? 0 : (presentCount / totalCount) * 100,
+      attendanceSummary: attendance[0] ?? null,
+      attendanceRecords,
       recentResults: results,
       reportCards,
-      feeBalance: feeBalance[0] ?? null,
-      invoices,
+      feeBalance: normalizedFeeBalance,
+      invoices: invoicesWithItems,
       payments,
       libraryLoans,
       announcements,
@@ -317,6 +422,11 @@ export const insightsService = {
 
         const presentCount = Number(attendance[0]?.present_count ?? 0);
         const totalCount = Number(attendance[0]?.total_count ?? 0);
+        const invoicesWithItems = await attachInvoiceItems(invoices as Array<Record<string, unknown> & { id: number | string }>);
+        const normalizedFeeBalance = buildFeeBalanceFromInvoices(
+          invoicesWithItems as Array<Record<string, unknown>>,
+          (feeBalance[0] as Record<string, unknown> | undefined) ?? null
+        );
 
         return {
           ...child,
@@ -325,8 +435,8 @@ export const insightsService = {
           assignments,
           results,
           reportCards,
-          feeBalance: feeBalance[0] ?? null,
-          invoices,
+          feeBalance: normalizedFeeBalance,
+          invoices: invoicesWithItems,
           payments,
           libraryLoans
         };

@@ -86,10 +86,26 @@ export const ROLE_TAB_ACCESS: Record<UserRole, PortalTab[]> = {
   ],
 };
 
-export const canAccessPortalTab = (role: UserRole | undefined, tab: PortalTab): boolean => {
+const ROLE_ALIASES: Record<string, UserRole> = {
+  ADMIN: "ADMIN",
+  ADMINISTRATOR: "ADMIN",
+  PRINCIPAL: "PRINCIPAL",
+  TEACHER: "TEACHER",
+  ACCOUNTANT: "ACCOUNTANT",
+  LIBRARIAN: "LIBRARIAN",
+  STUDENT: "STUDENT",
+  PARENT: "PARENT",
+};
+
+export const canAccessPortalTab = (role: string | undefined, tab: PortalTab): boolean => {
   if (!role) {
     return false;
   }
 
-  return ROLE_TAB_ACCESS[role].includes(tab);
+  const normalizedRole = ROLE_ALIASES[role.toUpperCase()];
+  if (!normalizedRole) {
+    return false;
+  }
+
+  return ROLE_TAB_ACCESS[normalizedRole].includes(tab);
 };

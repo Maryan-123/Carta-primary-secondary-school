@@ -153,6 +153,11 @@ export default function BillingFinance() {
   const [ledgerDate, setLedgerDate] = useState(today);
   const [ledgerMethod, setLedgerMethod] = useState<'CASH' | 'BANK' | 'MOBILE_MONEY' | 'CHEQUE'>('CASH');
   const [ledgerReference, setLedgerReference] = useState('');
+  const [feeTypeFilter, setFeeTypeFilter] = useState('');
+  const [structureFilter, setStructureFilter] = useState('');
+  const [invoiceFilter, setInvoiceFilter] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('');
+  const [ledgerFilter, setLedgerFilter] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -237,6 +242,60 @@ export default function BillingFinance() {
       netCash: totalPaid + totalIncome - totalExpenses,
     };
   }, [expenses, income, invoices, payments]);
+
+  const filteredFeeTypes = useMemo(
+    () =>
+      feeTypes.filter((item) =>
+        `${item.name} ${item.description || ''}`.toLowerCase().includes(feeTypeFilter.toLowerCase()),
+      ),
+    [feeTypeFilter, feeTypes],
+  );
+
+  const filteredFeeStructures = useMemo(
+    () =>
+      feeStructures.filter((item) =>
+        `${item.fee_type_name || ''} ${item.classroom_name || ''} ${item.academic_year_name || ''} ${item.term_name || ''}`
+          .toLowerCase()
+          .includes(structureFilter.toLowerCase()),
+      ),
+    [feeStructures, structureFilter],
+  );
+
+  const filteredInvoices = useMemo(
+    () =>
+      invoices.filter((item) =>
+        `${item.invoice_number} ${item.admission_number || ''} ${item.first_name || ''} ${item.last_name || ''} ${item.status || ''}`
+          .toLowerCase()
+          .includes(invoiceFilter.toLowerCase()),
+      ),
+    [invoiceFilter, invoices],
+  );
+
+  const filteredPayments = useMemo(
+    () =>
+      payments.filter((item) =>
+        `${item.invoice_number || ''} ${item.receipt_number || ''} ${item.payment_method || ''} ${item.reference_number || ''}`
+          .toLowerCase()
+          .includes(paymentFilter.toLowerCase()),
+      ),
+    [paymentFilter, payments],
+  );
+
+  const filteredIncome = useMemo(
+    () =>
+      income.filter((item) =>
+        `${item.income_category} ${item.description} ${item.payment_method}`.toLowerCase().includes(ledgerFilter.toLowerCase()),
+      ),
+    [income, ledgerFilter],
+  );
+
+  const filteredExpenses = useMemo(
+    () =>
+      expenses.filter((item) =>
+        `${item.expense_category} ${item.description} ${item.payment_method}`.toLowerCase().includes(ledgerFilter.toLowerCase()),
+      ),
+    [expenses, ledgerFilter],
+  );
 
   const handleCreateFeeType = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -604,8 +663,11 @@ export default function BillingFinance() {
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="rounded-2xl border border-slate-200">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Fee Types</div>
+                <div className="border-b border-slate-100 px-4 py-3">
+                  <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter fee types" value={feeTypeFilter} onChange={(event) => setFeeTypeFilter(event.target.value)} />
+                </div>
                 <div className="divide-y divide-slate-100">
-                  {feeTypes.map((item) => (
+                  {filteredFeeTypes.map((item) => (
                     <div key={item.id} className="flex items-center justify-between px-4 py-3 text-xs">
                       <div>
                         <p className="font-bold text-slate-900">{item.name}</p>
@@ -621,8 +683,11 @@ export default function BillingFinance() {
 
               <div className="rounded-2xl border border-slate-200">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Fee Structures</div>
+                <div className="border-b border-slate-100 px-4 py-3">
+                  <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter fee structures" value={structureFilter} onChange={(event) => setStructureFilter(event.target.value)} />
+                </div>
                 <div className="divide-y divide-slate-100">
-                  {feeStructures.map((item) => (
+                  {filteredFeeStructures.map((item) => (
                     <div key={item.id} className="flex items-center justify-between px-4 py-3 text-xs">
                       <div>
                         <p className="font-bold text-slate-900">{item.fee_type_name} - {item.classroom_name}</p>
@@ -638,6 +703,9 @@ export default function BillingFinance() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="border-b border-slate-100 px-4 py-3">
+                <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter invoices by student, invoice number, or status" value={invoiceFilter} onChange={(event) => setInvoiceFilter(event.target.value)} />
+              </div>
               <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50 font-bold text-slate-500">
                   <tr>
@@ -652,7 +720,7 @@ export default function BillingFinance() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {invoices.map((item) => (
+                  {filteredInvoices.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 font-mono font-bold text-slate-900">{item.invoice_number}</td>
                       <td className="px-4 py-3">{item.first_name} {item.last_name}</td>
@@ -675,6 +743,9 @@ export default function BillingFinance() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="border-b border-slate-100 px-4 py-3">
+                <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter payments by receipt, invoice, method, or reference" value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)} />
+              </div>
               <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50 font-bold text-slate-500">
                   <tr>
@@ -686,7 +757,7 @@ export default function BillingFinance() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {payments.map((item) => (
+                  {filteredPayments.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 font-mono font-bold text-slate-900">{item.receipt_number || `PAY-${item.id}`}</td>
                       <td className="px-4 py-3">{item.invoice_number || item.invoice_id}</td>
@@ -736,6 +807,8 @@ export default function BillingFinance() {
               </form>
             ) : null}
 
+            <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter income and expenses by category, description, or method" value={ledgerFilter} onChange={(event) => setLedgerFilter(event.target.value)} />
+
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Income Records</div>
@@ -749,7 +822,7 @@ export default function BillingFinance() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {income.map((item) => (
+                    {filteredIncome.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3">
                           <div className="font-bold text-slate-900">{item.income_category}</div>
@@ -780,7 +853,7 @@ export default function BillingFinance() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {expenses.map((item) => (
+                    {filteredExpenses.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3">
                           <div className="font-bold text-slate-900">{item.expense_category}</div>
@@ -801,6 +874,9 @@ export default function BillingFinance() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="border-b border-slate-100 px-4 py-3">
+                <input className="w-full rounded border bg-white px-3 py-2 text-xs" placeholder="Filter payment receipts" value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)} />
+              </div>
               <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50 font-bold text-slate-500">
                   <tr>
@@ -812,7 +888,7 @@ export default function BillingFinance() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {payments.map((item) => (
+                  {filteredPayments.map((item) => (
                     <tr key={item.id}>
                       <td className="px-4 py-3 font-mono font-bold text-slate-900">{item.receipt_number || `PAY-${item.id}`}</td>
                       <td className="px-4 py-3">{item.invoice_number || item.invoice_id}</td>

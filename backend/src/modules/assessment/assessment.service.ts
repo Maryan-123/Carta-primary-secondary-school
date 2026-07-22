@@ -19,6 +19,17 @@ const ensureStrictTimeOrder = (startTime?: string, endTime?: string): void => {
   }
 };
 
+const toIsoDate = (value: string | Date): string => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value).slice(0, 10) : date.toISOString().slice(0, 10);
+};
+
+const clampDateToRange = (value: string, min: string, max: string): string => {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+};
+
 const normalizeGrade = async (client: Parameters<Parameters<typeof withTransaction>[0]>[0], percentage: number) => {
   const scaleResult = await client.query<{
     grade_name: string;
@@ -362,12 +373,9 @@ export const assessmentService = {
       const exam = await client.query<{ start_date: string; end_date: string }>(`SELECT start_date, end_date FROM exams WHERE id = $1`, [payload.examId]);
       const examRow = exam.rows[0];
       if (!examRow) throw new NotFoundError("Exam not found");
-      const examDate = new Date(String(payload.examDate));
-      if (examDate < new Date(examRow.start_date) || examDate > new Date(examRow.end_date)) {
-        throw new ValidationAppError("Validation failed", [
-          { field: "examDate", message: "Exam subject date must fall within the parent exam date range" }
-        ]);
-      }
+      const startDate = toIsoDate(examRow.start_date);
+      const endDate = toIsoDate(examRow.end_date);
+      const normalizedExamDate = clampDateToRange(String(payload.examDate || startDate).slice(0, 10), startDate, endDate);
 
       const result = await client.query<{ id: number }>(
         `INSERT INTO exam_subjects (
@@ -375,14 +383,14 @@ export const assessmentService = {
         )
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
         RETURNING id`,
-        [payload.examId, payload.classroomId, payload.subjectId, payload.examDate, payload.startTime ?? null, payload.endTime ?? null, payload.maximumMarks, payload.passMarks]
+        [payload.examId, payload.classroomId, payload.subjectId, normalizedExamDate, payload.startTime ?? null, payload.endTime ?? null, payload.maximumMarks, payload.passMarks]
       );
       await writeAuditLog(client, {
         userId: actorUserId,
         action: "CREATE_EXAM_SUBJECT",
         tableName: "exam_subjects",
         recordId: result.rows[0].id,
-        newValues: payload,
+        newValues: { ...payload, examDate: normalizedExamDate },
         ipAddress
       });
       return result.rows[0].id;
@@ -390,9 +398,18 @@ export const assessmentService = {
     return this.getExamSubject(id);
   },
   async updateExamSubject(actorUserId: number, id: number, payload: Record<string, unknown>, ipAddress: string | null) {
-    await this.getExamSubject(id);
+    const existing = await this.getExamSubject(id);
     ensureStrictTimeOrder(payload.startTime as string | undefined, payload.endTime as string | undefined);
     await withTransaction(async (client) => {
+      const resolvedExamId = Number(payload.examId ?? existing.exam_id);
+      const exam = await client.query<{ start_date: string; end_date: string }>(`SELECT start_date, end_date FROM exams WHERE id = $1`, [resolvedExamId]);
+      const examRow = exam.rows[0];
+      if (!examRow) throw new NotFoundError("Exam not found");
+      const startDate = toIsoDate(examRow.start_date);
+      const endDate = toIsoDate(examRow.end_date);
+      const rawExamDate = String(payload.examDate ?? existing.exam_date ?? startDate).slice(0, 10);
+      const normalizedExamDate = clampDateToRange(rawExamDate, startDate, endDate);
+
       await client.query(
         `UPDATE exam_subjects
          SET exam_id = COALESCE($2, exam_id),
@@ -404,14 +421,14 @@ export const assessmentService = {
              maximum_marks = COALESCE($8, maximum_marks),
              pass_marks = COALESCE($9, pass_marks)
          WHERE id = $1`,
-        [id, payload.examId ?? null, payload.classroomId ?? null, payload.subjectId ?? null, payload.examDate ?? null, payload.startTime ?? null, payload.endTime ?? null, payload.maximumMarks ?? null, payload.passMarks ?? null]
+        [id, payload.examId ?? null, payload.classroomId ?? null, payload.subjectId ?? null, normalizedExamDate, payload.startTime ?? null, payload.endTime ?? null, payload.maximumMarks ?? null, payload.passMarks ?? null]
       );
       await writeAuditLog(client, {
         userId: actorUserId,
         action: "UPDATE_EXAM_SUBJECT",
         tableName: "exam_subjects",
         recordId: id,
-        newValues: payload,
+        newValues: { ...payload, examDate: normalizedExamDate },
         ipAddress
       });
     });

@@ -164,9 +164,21 @@ export default function ServicesSettings() {
   const [schoolPhone, setSchoolPhone] = useState('');
   const [schoolEmail, setSchoolEmail] = useState('');
   const [schoolTimezone, setSchoolTimezone] = useState('');
+  const [libraryFilter, setLibraryFilter] = useState('');
+  const [loanFilter, setLoanFilter] = useState('');
+  const [announcementFilter, setAnnouncementFilter] = useState('');
+  const [eventFilter, setEventFilter] = useState('');
+  const [disciplineFilter, setDisciplineFilter] = useState('');
+  const [auditFilter, setAuditFilter] = useState('');
 
   const studentNameById = new Map(students.map((item) => [item.id, `${item.first_name} ${item.last_name}`]));
   const bookTitleById = new Map(books.map((item) => [item.id, item.title]));
+  const filteredBooks = books.filter((item) => `${item.title} ${item.author || ''} ${item.isbn || ''}`.toLowerCase().includes(libraryFilter.toLowerCase()));
+  const filteredBookLoans = bookLoans.filter((item) => `${bookTitleById.get(item.book_id) || ''} ${item.student_id ? studentNameById.get(item.student_id) || '' : ''} ${item.status}`.toLowerCase().includes(loanFilter.toLowerCase()));
+  const filteredAnnouncements = announcements.filter((item) => `${item.title} ${item.message} ${item.audience_type}`.toLowerCase().includes(announcementFilter.toLowerCase()));
+  const filteredEvents = events.filter((item) => `${item.title} ${item.event_type} ${item.location || ''}`.toLowerCase().includes(eventFilter.toLowerCase()));
+  const filteredDiscipline = discipline.filter((item) => `${studentNameById.get(item.student_id) || ''} ${item.incident_type} ${item.description} ${item.status}`.toLowerCase().includes(disciplineFilter.toLowerCase()));
+  const filteredAuditLogs = auditLogs.filter((item) => `${item.action} ${item.table_name || ''} ${item.record_id || ''} ${item.ip_address || ''}`.toLowerCase().includes(auditFilter.toLowerCase()));
 
   const loadSectionData = async () => {
     setLoading(true);
@@ -504,6 +516,14 @@ export default function ServicesSettings() {
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Books</div>
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <input
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                    placeholder="Filter books by title, author, or ISBN"
+                    value={libraryFilter}
+                    onChange={(event) => setLibraryFilter(event.target.value)}
+                  />
+                </div>
                 <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                   <thead className="bg-slate-50 font-bold text-slate-500">
                     <tr>
@@ -513,7 +533,7 @@ export default function ServicesSettings() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {books.map((item) => (
+                    {filteredBooks.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3">
                           <div className="font-bold text-slate-900">{item.title}</div>
@@ -529,6 +549,14 @@ export default function ServicesSettings() {
 
               <div className="rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Book Loans</div>
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <input
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                    placeholder="Filter loans by book, student, or status"
+                    value={loanFilter}
+                    onChange={(event) => setLoanFilter(event.target.value)}
+                  />
+                </div>
                 <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                   <thead className="bg-slate-50 font-bold text-slate-500">
                     <tr>
@@ -539,7 +567,7 @@ export default function ServicesSettings() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {bookLoans.map((item) => (
+                    {filteredBookLoans.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3">{bookTitleById.get(item.book_id) || `Book #${item.book_id}`}</td>
                         <td className="px-4 py-3">{item.student_id ? studentNameById.get(item.student_id) || `Student #${item.student_id}` : 'N/A'}</td>
@@ -616,8 +644,16 @@ export default function ServicesSettings() {
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="rounded-2xl border border-slate-200">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Announcements</div>
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <input
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                    placeholder="Filter announcements by title, audience, or message"
+                    value={announcementFilter}
+                    onChange={(event) => setAnnouncementFilter(event.target.value)}
+                  />
+                </div>
                 <div className="divide-y divide-slate-100">
-                  {announcements.map((item) => (
+                  {filteredAnnouncements.map((item) => (
                     <div key={item.id} className="flex items-start justify-between gap-4 px-4 py-3 text-xs">
                       <div>
                         <p className="font-bold text-slate-900">{item.title}</p>
@@ -634,8 +670,16 @@ export default function ServicesSettings() {
 
               <div className="rounded-2xl border border-slate-200">
                 <div className="border-b border-slate-100 px-4 py-3 text-sm font-black text-slate-800">Events</div>
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <input
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                    placeholder="Filter events by title, type, or location"
+                    value={eventFilter}
+                    onChange={(event) => setEventFilter(event.target.value)}
+                  />
+                </div>
                 <div className="divide-y divide-slate-100">
-                  {events.map((item) => (
+                  {filteredEvents.map((item) => (
                     <div key={item.id} className="flex items-start justify-between gap-4 px-4 py-3 text-xs">
                       <div>
                         <p className="font-bold text-slate-900">{item.title}</p>
@@ -679,6 +723,14 @@ export default function ServicesSettings() {
             ) : null}
 
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                <input
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                  placeholder="Filter incidents by student, type, or status"
+                  value={disciplineFilter}
+                  onChange={(event) => setDisciplineFilter(event.target.value)}
+                />
+              </div>
               <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50 font-bold text-slate-500">
                   <tr>
@@ -691,7 +743,7 @@ export default function ServicesSettings() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {discipline.map((item) => (
+                  {filteredDiscipline.map((item) => (
                     <tr key={item.id}>
                       <td className="px-4 py-3">{studentNameById.get(item.student_id) || `Student #${item.student_id}`}</td>
                       <td className="px-4 py-3">{formatDate(item.incident_date)}</td>
@@ -753,8 +805,16 @@ export default function ServicesSettings() {
               <ShieldCheck className="h-4 w-4" />
               Live audit records from the backend
             </div>
+            <div className="mb-4">
+              <input
+                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500"
+                placeholder="Filter audit logs by action, table, record, or IP"
+                value={auditFilter}
+                onChange={(event) => setAuditFilter(event.target.value)}
+              />
+            </div>
             <div className="max-h-[28rem] space-y-2 overflow-y-auto">
-              {auditLogs.map((item) => (
+              {filteredAuditLogs.map((item) => (
                 <div key={item.id} className="border-b border-slate-800 pb-2 last:border-b-0">
                   <span className="text-emerald-300">{formatDate(item.created_at)}</span>{' '}
                   <span className="text-sky-300">{item.action}</span>{' '}

@@ -222,11 +222,12 @@ export const authorizeTeacherAssignedExamSubject =
     const rows = await query<{ id: number }>(
       `SELECT es.id
        FROM exam_subjects es
+       JOIN exams e ON e.id = es.exam_id
        JOIN teacher_subject_assignments tsa
          ON tsa.classroom_id = es.classroom_id
         AND tsa.subject_id = es.subject_id
-        AND tsa.academic_year_id = es.academic_year_id
-        AND tsa.term_id = es.term_id
+        AND tsa.academic_year_id = e.academic_year_id
+        AND tsa.term_id = e.term_id
        WHERE es.id = $1
          AND tsa.teacher_id = $2
        LIMIT 1`,
