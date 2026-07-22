@@ -43,24 +43,26 @@ function HeroPanel({
   chips: string[];
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[32px] border border-[#bfd0ff] bg-[radial-gradient(circle_at_top_left,_rgba(18,59,138,0.28),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(11,143,90,0.2),_transparent_30%),linear-gradient(135deg,#eef4ff_0%,#dfeafe_44%,#e2f5ea_100%)] p-6 shadow-[0_24px_60px_rgba(18,59,138,0.14)]">
-      <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#123B8A]/10 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-[#0B8F5A]/10 blur-3xl" />
-      <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <div className="relative overflow-hidden rounded-[38px] border border-[#dbe5ff] bg-[radial-gradient(circle_at_top_left,_rgba(18,59,138,0.44),_transparent_34%),radial-gradient(circle_at_85%_18%,_rgba(71,125,255,0.16),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(11,143,90,0.22),_transparent_28%),linear-gradient(135deg,#ffffff_0%,#edf3ff_40%,#e8f8ef_100%)] p-8 shadow-[0_34px_90px_rgba(18,59,138,0.16)]">
+      <div className="absolute inset-x-8 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.95),transparent)]" />
+      <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[#123B8A]/12 blur-3xl" />
+      <div className="absolute bottom-0 right-8 h-36 w-36 rounded-full bg-[#0B8F5A]/10 blur-3xl" />
+      <div className="absolute left-8 top-8 h-20 w-20 rounded-full border border-white/60 bg-white/18 backdrop-blur-xl" />
+      <div className="relative flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/78 px-3 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-[#123B8A] backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/84 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.32em] text-[#123B8A] shadow-[0_10px_30px_rgba(18,59,138,0.08)] backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" />
             {eyebrow}
           </div>
-          <h1 className="mt-4 text-3xl font-black tracking-tight text-[#102c63] sm:text-4xl">{title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#34507f] sm:text-base">{subtitle}</p>
+          <h1 className="mt-6 text-3xl font-black tracking-[-0.05em] text-[#102c63] sm:text-[2.85rem]">{title}</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#34507f] sm:text-[1.04rem]">{subtitle}</p>
         </div>
 
-        <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+        <div className="flex flex-wrap gap-2.5 xl:max-w-sm xl:justify-end">
           {chips.map((chip) => (
             <span
               key={chip}
-              className="rounded-full border border-white/90 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#123B8A] backdrop-blur"
+              className="rounded-full border border-white/90 bg-white/88 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#123B8A] shadow-[0_10px_26px_rgba(18,59,138,0.08)] backdrop-blur"
             >
               {chip}
             </span>
@@ -83,21 +85,21 @@ function AccentStatCard({
   tone: 'blue' | 'green' | 'amber' | 'rose';
 }) {
   const toneClasses = {
-    blue: 'from-[#123B8A] to-[#2d5fbe] text-white shadow-[0_18px_45px_rgba(18,59,138,0.24)]',
-    green: 'from-[#0B8F5A] to-[#21b879] text-white shadow-[0_18px_45px_rgba(11,143,90,0.22)]',
-    amber: 'from-[#f59e0b] to-[#fbbf24] text-slate-950 shadow-[0_18px_45px_rgba(245,158,11,0.22)]',
-    rose: 'from-[#e11d48] to-[#fb7185] text-white shadow-[0_18px_45px_rgba(225,29,72,0.18)]',
+    blue: 'from-[#143a86] via-[#2b59b0] to-[#4b82f3] text-white shadow-[0_22px_50px_rgba(18,59,138,0.24)]',
+    green: 'from-[#0b7c4f] via-[#109663] to-[#2dc18b] text-white shadow-[0_22px_50px_rgba(11,143,90,0.22)]',
+    amber: 'from-[#d88907] via-[#f0a61a] to-[#ffd166] text-slate-950 shadow-[0_22px_50px_rgba(245,158,11,0.22)]',
+    rose: 'from-[#c61d48] via-[#e44f73] to-[#ff94aa] text-white shadow-[0_22px_50px_rgba(225,29,72,0.18)]',
   } as const;
 
   return (
-    <div className={`rounded-[24px] bg-gradient-to-br p-[1px] ${toneClasses[tone]}`}>
-      <div className="rounded-[23px] bg-white/16 p-5 backdrop-blur">
+    <div className={`rounded-[28px] bg-gradient-to-br p-[1px] ${toneClasses[tone]}`}>
+      <div className="rounded-[27px] bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.08)_100%)] p-5 backdrop-blur-xl">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.22em] opacity-80">{label}</p>
-            <p className="mt-3 text-3xl font-black tracking-tight">{value}</p>
+            <p className="mt-3 text-3xl font-black tracking-[-0.04em]">{value}</p>
           </div>
-          <div className="rounded-2xl bg-white/18 p-3">{icon}</div>
+          <div className="rounded-[18px] border border-white/15 bg-white/18 p-3 shadow-inner">{icon}</div>
         </div>
       </div>
     </div>
@@ -114,18 +116,18 @@ function SurfaceCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[28px] border border-[#c7d7ff] bg-[linear-gradient(180deg,#f8fbff_0%,#edf4ff_52%,#eef8f2_100%)] p-5 shadow-[0_18px_50px_rgba(18,59,138,0.09)]">
+    <div className="rounded-[32px] border border-[#dbe5ff] bg-[linear-gradient(180deg,#ffffff_0%,#f3f7ff_50%,#eef8f2_100%)] p-5 shadow-[0_24px_56px_rgba(18,59,138,0.09)]">
       <div className="flex items-center gap-3">
-        {icon ? <div className="rounded-2xl bg-[linear-gradient(135deg,#dce8ff_0%,#dcf5e8_100%)] p-2.5 text-[#123B8A] shadow-sm">{icon}</div> : null}
+        {icon ? <div className="rounded-[18px] border border-white/80 bg-[linear-gradient(135deg,#dce8ff_0%,#dcf5e8_100%)] p-2.5 text-[#123B8A] shadow-[0_10px_24px_rgba(18,59,138,0.08)]">{icon}</div> : null}
         <h2 className="text-sm font-black uppercase tracking-[0.24em] text-[#123B8A]">{title}</h2>
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-5">{children}</div>
     </div>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
-  return <p className="rounded-2xl border border-dashed border-[#c7d7ff] bg-[linear-gradient(135deg,#eef4ff_0%,#ecf8f1_100%)] px-4 py-6 text-sm text-[#4b648b]">{message}</p>;
+  return <p className="rounded-[22px] border border-dashed border-[#c7d7ff] bg-[linear-gradient(135deg,#f4f8ff_0%,#eef8f2_100%)] px-4 py-6 text-sm leading-6 text-[#4b648b]">{message}</p>;
 }
 
 function ListStack({
@@ -160,9 +162,9 @@ function QuickProfileFacts({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {facts.map((fact) => (
-        <div key={fact.label} className="rounded-[24px] border border-[#c7d7ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eaf2ff_56%,#edf8f2_100%)] p-5 shadow-[0_18px_50px_rgba(18,59,138,0.08)]">
+        <div key={fact.label} className="rounded-[26px] border border-[#dbe5ff] bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_56%,#edf8f2_100%)] p-5 shadow-[0_18px_48px_rgba(18,59,138,0.08)]">
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#0B8F5A]">{fact.label}</p>
-          <p className="mt-3 text-2xl font-black tracking-tight text-[#123B8A]">{fact.value}</p>
+          <p className="mt-3 text-2xl font-black tracking-[-0.04em] text-[#123B8A]">{fact.value}</p>
         </div>
       ))}
     </div>
@@ -179,12 +181,35 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[28px] border border-[#c7d7ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_52%,#eef8f2_100%)] p-5 shadow-[0_18px_50px_rgba(18,59,138,0.09)]">
+    <div className="rounded-[32px] border border-[#dbe5ff] bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_52%,#eef8f2_100%)] p-5 shadow-[0_24px_56px_rgba(18,59,138,0.1)]">
       <div className="mb-4">
         <h3 className="text-sm font-black uppercase tracking-[0.22em] text-[#123B8A]">{title}</h3>
-        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        <p className="mt-1.5 text-sm leading-6 text-slate-500">{subtitle}</p>
       </div>
-      <div className="h-72">{children}</div>
+      <div className="h-72 rounded-[26px] border border-white/80 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MetricTiles({
+  items,
+}: {
+  items: Array<{ label: string; value: string | number; note: string }>;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="rounded-[24px] border border-[#d7e3ff] bg-[linear-gradient(145deg,#ffffff_0%,#eef4ff_55%,#eef8f1_100%)] px-4 py-4 shadow-[0_12px_30px_rgba(18,59,138,0.06)]"
+        >
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#0B8F5A]">{item.label}</p>
+          <p className="mt-2 text-2xl font-black tracking-tight text-[#123B8A]">{item.value}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">{item.note}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -269,6 +294,61 @@ export default function Dashboard() {
     name: item.gender || 'OTHER',
     value: Number(item.total ?? 0),
   }));
+
+  const teacherActionTiles = [
+    {
+      label: 'Attendance Work',
+      value: dashboardData?.assigned_classrooms ?? 0,
+      note: 'Assigned classrooms that need daily register coverage from your teaching account.',
+    },
+    {
+      label: 'Assessment Queue',
+      value: (dashboardData?.submissions || []).length,
+      note: 'Recent submissions waiting for grading, review, or classroom follow-up.',
+    },
+    {
+      label: 'Exam Readiness',
+      value: (dashboardData?.upcomingExams || []).length,
+      note: 'Scheduled exam items linked to your assigned classes and subjects.',
+    },
+  ];
+
+  const studentJourneyTiles = [
+    {
+      label: 'Learning Track',
+      value: dashboardData?.currentClassroom?.classroom_name || 'Not Assigned',
+      note: 'Your current class placement from the school database.',
+    },
+    {
+      label: 'Attendance Rate',
+      value: `${Math.round(dashboardData?.attendancePercentage ?? 0)}%`,
+      note: 'Updated only from your own recorded attendance rows.',
+    },
+    {
+      label: 'Study Pipeline',
+      value: (dashboardData?.recentAssignments || []).length,
+      note: 'Visible assignments currently returned by your student account.',
+    },
+  ];
+
+  const parentFamilyTiles = [
+    {
+      label: 'Linked Children',
+      value: (dashboardData?.children || []).length,
+      note: 'Only children connected to this parent through the real parent-student relationship table.',
+    },
+    {
+      label: 'Family Notices',
+      value: (dashboardData?.announcements || []).length,
+      note: 'Announcements currently visible to this parent account.',
+    },
+    {
+      label: 'Upcoming Events',
+      value: (dashboardData?.upcomingEvents || []).length,
+      note: 'Upcoming school dates relevant to your family and school calendar.',
+    },
+  ];
+
   if (loading) {
     return (
       <div className="rounded-[28px] border border-[#c7d7ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_52%,#eef8f2_100%)] p-8 shadow-sm">
@@ -311,6 +391,28 @@ export default function Dashboard() {
           <AccentStatCard label="Classrooms" value={dashboardData?.totalClassrooms ?? 0} icon={<School className="h-5 w-5" />} tone="amber" />
           <AccentStatCard label="Unpaid Fees" value={dashboardData?.totalUnpaidFees ?? 0} icon={<CreditCard className="h-5 w-5" />} tone="rose" />
         </div>
+
+        <SurfaceCard title="Leadership Focus" icon={<Sparkles className="h-4 w-4" />}>
+          <MetricTiles
+            items={[
+              {
+                label: 'Enrollment Pulse',
+                value: dashboardData?.totalActiveStudents ?? 0,
+                note: 'Active students currently visible in the real database.',
+              },
+              {
+                label: 'Collection Pulse',
+                value: dashboardData?.totalFeesCollectedThisMonth ?? 0,
+                note: 'This month fee collections compared with live finance records.',
+              },
+              {
+                label: 'Compliance Pulse',
+                value: (dashboardData?.recentAuditActivity || []).length,
+                note: 'Recent audit rows showing important activity across the system.',
+              },
+            ]}
+          />
+        </SurfaceCard>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <SurfaceCard title="Recent Announcements" icon={<Megaphone className="h-4 w-4" />}>
@@ -451,6 +553,10 @@ export default function Dashboard() {
           <AccentStatCard label="Active Assignments" value={dashboardData?.active_assignments ?? 0} icon={<BookText className="h-5 w-5" />} tone="amber" />
         </div>
 
+        <SurfaceCard title="Teaching Priorities" icon={<Sparkles className="h-4 w-4" />}>
+          <MetricTiles items={teacherActionTiles} />
+        </SurfaceCard>
+
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <SurfaceCard title="My Classes" icon={<School className="h-4 w-4" />}>
             <div className="flex flex-wrap gap-2">
@@ -574,6 +680,12 @@ export default function Dashboard() {
           <AccentStatCard label="Attendance" value={`${Math.round(dashboardData?.attendancePercentage ?? 0)}%`} icon={<CalendarDays className="h-5 w-5" />} tone="green" />
           <AccentStatCard label="Fee Balance" value={dashboardData?.feeBalance?.total_balance ?? 0} icon={<CreditCard className="h-5 w-5" />} tone="amber" />
         </div>
+
+        {overviewMode ? (
+          <SurfaceCard title="Personal Progress Snapshot" icon={<Sparkles className="h-4 w-4" />}>
+            <MetricTiles items={studentJourneyTiles} />
+          </SurfaceCard>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {overviewMode ? (
@@ -824,6 +936,10 @@ export default function Dashboard() {
           ]}
         />
 
+        <SurfaceCard title="Family Snapshot" icon={<Sparkles className="h-4 w-4" />}>
+          <MetricTiles items={parentFamilyTiles} />
+        </SurfaceCard>
+
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
           <SurfaceCard title="Linked Children" icon={<Users className="h-4 w-4" />}>
             <ListStack
@@ -838,7 +954,7 @@ export default function Dashboard() {
                     <InfoBadge>{(item.assignments || []).length} Assignments</InfoBadge>
                     <InfoBadge>{(item.results || []).length} Results</InfoBadge>
                     <InfoBadge>{(item.reportCards || []).length} Report Cards</InfoBadge>
-                    <InfoBadge>Balance: {item.feeBalance?.balance_amount ?? 0}</InfoBadge>
+                    <InfoBadge>Balance: {item.feeBalance?.total_balance ?? item.feeBalance?.balance_amount ?? 0}</InfoBadge>
                   </div>
                 </div>
               )}
