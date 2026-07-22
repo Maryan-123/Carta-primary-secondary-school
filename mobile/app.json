@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "CARTA School",
+    "slug": "carta-school-mobile",
+    "scheme": "carta-school",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/carta-logo.jpeg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/carta-logo.jpeg",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F9FC"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/carta-logo.jpeg",
+        "backgroundColor": "#F7F9FC"
+      },
+      "package": "com.carta.school.mobile"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

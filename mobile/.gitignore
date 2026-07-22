@@ -1,0 +1,5 @@
+node_modules/
+.expo/
+expo-start.out.log
+expo-start.err.log
+expo-env.d.ts

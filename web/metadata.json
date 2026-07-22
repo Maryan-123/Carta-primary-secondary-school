@@ -1,0 +1,6 @@
+{
+  "name": "School Management System",
+  "description": "A complete, role-based offline-capable school management system supporting administrators, principals, teachers, accountants, librarians, students, and parents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

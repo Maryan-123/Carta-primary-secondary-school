@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+coverage
+logs/*.log
+uploads/students/*
+uploads/staff/*
+uploads/assignments/*
+uploads/school/*
+uploads/temporary/*
+backups/*
+!.gitkeep

@@ -1,0 +1,6 @@
+{
+  "name": "CARTA School",
+  "description": "CARTA School Educational Management Portal for Students, Parents, and Teachers",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
